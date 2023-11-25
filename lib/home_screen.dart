@@ -59,8 +59,18 @@ class _HomeScreenState extends State<HomeScreen> {
         onMapCreated: (GoogleMapController controller){
           _controller.complete(controller);
         },
-        ),
-
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async{
+          GoogleMapController controller  = await _controller.future;
+          controller.animateCamera(
+            CameraUpdate.newCameraPosition(
+              const CameraPosition(
+                target: LatLng(28.7214, 77.1409),
+                zoom: 18)));
+        },
+        child: const Icon(Icons.location_on),
+      ),
     );
   }
 }
