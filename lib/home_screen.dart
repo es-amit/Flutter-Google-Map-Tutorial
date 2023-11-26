@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,21 +13,31 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
-
   Completer<GoogleMapController> _controller = Completer();
+
+  // getting user current location
+  Future<Position> getUserCurrentLocation() async{
+    await Geolocator.requestPermission().then((value){
+
+    }).onError((error, stackTrace){
+      print(error.toString());
+    });
+    return await Geolocator.getCurrentPosition();
+  }
+
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(28.702070, 77.313880),
     zoom: 14.4746);
 
   List<Marker> _marker = [];
-  final List<Marker> _list= const [
-    Marker(
-      markerId: MarkerId("1"),
-      position: LatLng(28.702070, 77.313880),
-      infoWindow: InfoWindow(
-        title: "My position"
-      )
-    ),
+  final List<Marker> _list= [
+    // Marker(
+    //   markerId: MarkerId("1"),
+    //   position: LatLng(28.702070, 77.313880),
+    //   infoWindow: InfoWindow(
+    //     title: "My position"
+    //   )
+    // ),
     Marker(
       markerId: MarkerId("2"),
       position: LatLng(28.707190, 77.322180),
@@ -62,12 +73,29 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async{
-          GoogleMapController controller  = await _controller.future;
-          controller.animateCamera(
-            CameraUpdate.newCameraPosition(
-              const CameraPosition(
-                target: LatLng(28.7214, 77.1409),
-                zoom: 18)));
+          getUserCurrentLocation().then((value) async {
+            // print(value.latitude.toString() + " "+ value.longitude.toString());
+            _marker.add(
+              Marker(
+                markerId: const MarkerId("10"),
+                position: LatLng(value.latitude, value.longitude),
+                infoWindow: const InfoWindow(
+                  title: "My current Location"
+                )
+              )
+            );
+
+            CameraPosition cameraPosition = CameraPosition(
+              zoom: 16,
+              target: LatLng(value.latitude, value.longitude));
+
+            final GoogleMapController controller = await _controller.future;
+
+            controller.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+            setState(() {
+              
+            });
+          });
         },
         child: const Icon(Icons.location_on),
       ),
